@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Agents Maîtres — Plateforme de conseil juridique et fiscal par agents IA spécialisés. Avocat fiscalité, expert comptable, juriste, avocat affaires.">
+  <meta name="theme-color" content="#0D0D0D">
+  <meta property="og:title" content="Agents Maîtres — Conseil Juridique & Fiscal IA">
+  <meta property="og:description" content="Quatre agents experts spécialisés en droit fiscal, comptabilité, droit civil et droit des affaires français.">
+  <meta property="og:type" content="website">
+  <title>Agents Maîtres — Conseil Juridique & Fiscal IA</title>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/design-system.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/responsive.css">
+
+  <!-- Additional inline styles for shake animation and table styling -->
+  <style>
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      50% { transform: translateX(8px); }
+      75% { transform: translateX(-4px); }
+    }
+    .shake { animation: shake 0.4s ease; }
+
+    /* Table styling inside messages */
+    .message-bubble .table-wrapper {
+      overflow-x: auto;
+      margin: 0.75rem 0;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+    }
+    .message-bubble table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--font-size-sm);
+    }
+    .message-bubble th {
+      background: var(--bg-secondary);
+      padding: 0.5rem 0.75rem;
+      text-align: left;
+      font-weight: var(--font-weight-semibold);
+      color: var(--accent-gold);
+      border-bottom: 1px solid var(--border-default);
+      white-space: nowrap;
+    }
+    .message-bubble td {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+    }
+    .message-bubble tr:last-child td {
+      border-bottom: none;
+    }
+    .message-bubble tr:hover td {
+      background: rgba(255,255,255,0.02);
+    }
+    .message-bubble hr {
+      border: none;
+      border-top: 1px solid var(--border-subtle);
+      margin: 1rem 0;
+    }
+    .message-bubble a {
+      color: var(--accent-gold);
+      text-decoration: underline;
+      text-decoration-color: rgba(201, 168, 76, 0.3);
+      transition: text-decoration-color var(--transition-fast);
+    }
+    .message-bubble a:hover {
+      text-decoration-color: var(--accent-gold);
+    }
+    .message-bubble h3, .message-bubble h4 {
+      margin: 1rem 0 0.5rem;
+      color: var(--text-primary);
+    }
+    .message-bubble h3 {
+      font-size: var(--font-size-md);
+      font-weight: var(--font-weight-bold);
+    }
+    .message-bubble h4 {
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-semibold);
+    }
+    .message-bubble pre {
+      background: var(--bg-secondary);
+      padding: 0.75rem;
+      border-radius: var(--radius-sm);
+      overflow-x: auto;
+      margin: 0.5rem 0;
+      border: 1px solid var(--border-subtle);
+    }
+    .message-bubble pre code {
+      background: none;
+      padding: 0;
+      font-size: var(--font-size-sm);
+      color: var(--text-secondary);
+    }
+    .emoji-warning { font-size: 1.1em; }
+    .emoji-tip { font-size: 1.1em; }
+    .emoji-date { font-size: 1.1em; }
+
+    /* Panel specialties */
+    #panel-specialties-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       TOAST NOTIFICATIONS
+       ============================================================ -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ============================================================
+       LOGIN VIEW
+       ============================================================ -->
+  <section class="view" id="login-view">
+    <div class="login-container">
+      <div class="login-brand">
+        <div class="login-logo">AGENTS <span>MAÎTRES</span></div>
+        <p class="login-subtitle">Conseil juridique & fiscal par agents IA spécialisés</p>
+      </div>
+
+      <div class="login-card">
+        <h2>Connexion</h2>
+
+        <form class="login-form" id="login-form">
+          <div class="input-group">
+            <label for="login-email">Email</label>
+            <div class="input-with-icon">
+              <span class="input-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              </span>
+              <input type="email" id="login-email" class="input" placeholder="vous@entreprise.fr" required autocomplete="email" value="demo@agentsmaitres.fr">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="login-password">Mot de passe</label>
+            <div class="input-with-icon">
+              <span class="input-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </span>
+              <input type="password" id="login-password" class="input" placeholder="••••••••" required autocomplete="current-password" value="demo2024">
+              <button type="button" class="input-toggle" id="password-toggle" aria-label="Afficher le mot de passe">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="error-message" id="login-error" style="display: none;"></div>
+
+          <button type="submit" class="btn btn-primary btn-lg" id="login-submit">
+            Se connecter
+          </button>
+        </form>
+
+        <div class="login-divider">
+          <div class="divider-text">ou</div>
+        </div>
+
+        <div class="login-sso">
+          <button class="btn btn-secondary" type="button" onclick="window.showToast('SSO Google bientôt disponible', 'warning')">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            Continuer avec Google
+          </button>
+          <button class="btn btn-secondary" type="button" onclick="window.showToast('SSO Microsoft bientôt disponible', 'warning')">
+            <svg width="18" height="18" viewBox="0 0 24 24"><rect x="1" y="1" width="10" height="10" fill="#F25022"/><rect x="13" y="1" width="10" height="10" fill="#7FBA00"/><rect x="1" y="13" width="10" height="10" fill="#00A4EF"/><rect x="13" y="13" width="10" height="10" fill="#FFB900"/></svg>
+            Continuer avec Microsoft
+          </button>
+        </div>
+
+        <p class="login-privacy">
+          🔒 Vos données sont confidentielles. Ne partagez pas d'informations personnelles sensibles.
+        </p>
+      </div>
+
+      <div class="login-footer">
+        <p>Compte démo : <strong>demo@agentsmaitres.fr</strong> / <strong>demo2024</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       DASHBOARD VIEW
+       ============================================================ -->
+  <section class="view" id="dashboard-view">
+    <header class="app-header">
+      <div class="app-header-left">
+        <div class="app-logo">AGENTS <span>MAÎTRES</span></div>
+      </div>
+      <div class="app-header-right">
+        <div class="user-info">
+          <span class="user-name" id="dashboard-user-name">Utilisateur</span>
+          <div class="user-avatar-placeholder" id="dashboard-user-initials">U</div>
+        </div>
+        <button class="btn btn-ghost btn-icon" id="logout-btn" data-tooltip="Déconnexion">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="dashboard-content">
+      <div class="dashboard-welcome">
+        <h1>Vos experts à votre service</h1>
+        <p>Sélectionnez un agent spécialisé pour obtenir des conseils juridiques et fiscaux sourcés, basés exclusivement sur le droit français en vigueur.</p>
+      </div>
+
+      <div class="agents-grid" id="agents-grid">
+        <!-- Agent cards inserted dynamically -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       CHAT VIEW
+       ============================================================ -->
+  <section class="view" id="chat-view">
+    <!-- Sidebar overlay for mobile -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <div class="chat-layout">
+      <!-- Sidebar -->
+      <aside class="chat-sidebar" id="chat-sidebar">
+        <div class="sidebar-header">
+          <button class="btn btn-primary btn-sm" id="new-conversation-btn" style="width: 100%;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nouvelle conversation
+          </button>
+        </div>
+
+        <div class="sidebar-search">
+          <input type="text" class="input" placeholder="Rechercher..." id="conversation-search">
+        </div>
+
+        <div class="sidebar-conversations" id="sidebar-conversations">
+          <!-- Conversations inserted dynamically -->
+        </div>
+
+        <div class="sidebar-footer">
+          <button class="btn btn-ghost sidebar-back" id="back-to-dashboard">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Retour au tableau de bord
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main chat area -->
+      <main class="chat-main">
+        <!-- Chat Header -->
+        <div class="chat-header">
+          <div class="chat-header-left">
+            <button class="btn btn-ghost btn-icon sidebar-toggle" id="sidebar-toggle-btn" aria-label="Ouvrir le menu">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <img class="agent-avatar" id="chat-agent-avatar" src="" alt="Agent">
+            <div>
+              <div class="agent-name" id="chat-agent-name">Agent</div>
+              <div class="agent-status" id="chat-agent-status">En ligne</div>
+            </div>
+          </div>
+          <div class="chat-header-right">
+            <button class="btn btn-ghost btn-icon panel-toggle" id="panel-toggle-btn" data-tooltip="Informations" aria-label="Informations agent">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Messages Area -->
+        <div class="chat-messages" id="chat-messages-list">
+          <!-- Messages inserted dynamically -->
+        </div>
+
+        <!-- Input Area -->
+        <div class="chat-input-container">
+          <div class="chat-input-wrapper">
+            <textarea
+              class="chat-input"
+              id="chat-input"
+              placeholder="Posez votre question juridique, fiscale ou comptable..."
+              rows="1"
+              aria-label="Message"
+            ></textarea>
+            <button class="chat-send-btn" id="chat-send-btn" disabled aria-label="Envoyer">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+          <p class="chat-disclaimer">
+            Les réponses sont basées sur les textes de loi en vigueur. Consultez un professionnel pour les cas complexes.
+          </p>
+        </div>
+      </main>
+
+      <!-- Info Panel -->
+      <aside class="chat-panel" id="chat-panel">
+        <div class="panel-header">
+          <span class="panel-title">Informations</span>
+          <button class="btn btn-ghost btn-icon" id="panel-close-btn" aria-label="Fermer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <div class="panel-agent-info">
+          <img class="avatar avatar-xl" id="panel-agent-avatar" src="" alt="Agent">
+          <div class="panel-agent-name" id="panel-agent-name">Agent</div>
+          <div class="panel-agent-title" id="panel-agent-title">Titre</div>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-section-title">Sources officielles</div>
+          <div class="panel-sources-list" id="panel-sources-list">
+            <!-- Sources inserted dynamically -->
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-section-title">Spécialités</div>
+          <div id="panel-specialties-list">
+            <!-- Specialties inserted dynamically -->
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="panel-section-title">Rappel</div>
+          <p style="font-size: var(--font-size-sm); color: var(--text-muted); line-height: var(--line-height-relaxed);">
+            🔒 Ne partagez pas de données personnelles sensibles (numéro fiscal, SIRET, identifiants bancaires) dans cette interface.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- Main Application Script -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

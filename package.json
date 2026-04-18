@@ -1,0 +1,10 @@
+{
+  "name": "agents-maitres",
+  "version": "1.0.0",
+  "description": "Plateforme de conseil juridique et fiscal par agents IA spécialisés — Groq + Vercel",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  }
+}

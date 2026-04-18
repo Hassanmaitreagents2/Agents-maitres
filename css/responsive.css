@@ -1,0 +1,213 @@
+/* ============================================================
+   AGENTS MAÎTRES — Responsive Styles
+   Tablet & Mobile breakpoints
+   ============================================================ */
+
+/* --- Tablet (< 1200px) --- */
+@media (max-width: 1200px) {
+  .chat-panel {
+    display: none;
+  }
+
+  .chat-panel.panel-open {
+    display: flex;
+    position: fixed;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: var(--z-sidebar);
+    box-shadow: var(--shadow-xl);
+  }
+
+  .panel-toggle {
+    display: flex;
+  }
+}
+
+/* --- Tablet (< 1024px) --- */
+@media (max-width: 1024px) {
+  .agents-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-4);
+  }
+
+  .dashboard-content {
+    padding: var(--space-10) var(--space-6);
+  }
+
+  .dashboard-welcome h1 {
+    font-size: var(--font-size-3xl);
+  }
+
+  .chat-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: var(--z-sidebar);
+    transform: translateX(-100%);
+    transition: transform var(--transition-base);
+    box-shadow: var(--shadow-xl);
+  }
+
+  .chat-sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-toggle {
+    display: flex;
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: calc(var(--z-sidebar) - 1);
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-base);
+  }
+
+  .sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+/* --- Mobile (< 768px) --- */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 100%;
+  }
+
+  .app-header {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .app-logo {
+    font-size: var(--font-size-lg);
+  }
+
+  .user-name {
+    display: none;
+  }
+
+  .dashboard-content {
+    padding: var(--space-8) var(--space-4);
+  }
+
+  .dashboard-welcome {
+    margin-bottom: var(--space-8);
+  }
+
+  .dashboard-welcome h1 {
+    font-size: var(--font-size-2xl);
+  }
+
+  .dashboard-welcome p {
+    font-size: var(--font-size-base);
+  }
+
+  .agents-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  .card-agent {
+    padding: var(--space-6);
+  }
+
+  .card-agent .agent-cta {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* Chat */
+  .chat-header {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .chat-messages {
+    padding: var(--space-4);
+  }
+
+  .message {
+    max-width: 92%;
+  }
+
+  .chat-input-container {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .chat-input-wrapper {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .welcome-suggestions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* Login */
+  .login-container {
+    padding: var(--space-4);
+  }
+
+  .login-card {
+    padding: var(--space-6);
+  }
+
+  .login-logo {
+    font-size: var(--font-size-2xl);
+  }
+
+  .login-brand {
+    margin-bottom: var(--space-8);
+  }
+}
+
+/* --- Small Mobile (< 480px) --- */
+@media (max-width: 480px) {
+  .login-card {
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
+  }
+
+  .card-agent .agent-avatar {
+    width: 44px;
+    height: 44px;
+  }
+
+  .card-agent .agent-name {
+    font-size: var(--font-size-md);
+  }
+
+  .chat-welcome h2 {
+    font-size: var(--font-size-xl);
+  }
+
+  .chat-welcome .welcome-avatar {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+/* --- Print --- */
+@media print {
+  .chat-sidebar,
+  .chat-panel,
+  .chat-input-container,
+  .app-header {
+    display: none !important;
+  }
+
+  .chat-messages {
+    overflow: visible;
+  }
+
+  .message-bubble {
+    border: 1px solid #ccc;
+    color: #000;
+    background: #fff !important;
+  }
+}
