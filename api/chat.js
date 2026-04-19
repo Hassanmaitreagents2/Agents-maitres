@@ -294,7 +294,10 @@ export default async function handler(req) {
   const GROQ_API_KEY = process.env.GROQ_API_KEY;
   if (!GROQ_API_KEY) {
     return new Response(
-      JSON.stringify({ error: 'API_KEY_MISSING', message: 'Clé API Groq non configurée. Ajoutez GROQ_API_KEY dans les variables d\'environnement Vercel.' }),
+      JSON.stringify({ 
+        error: 'API_KEY_MISSING', 
+        message: 'Clé API Groq non configurée. 1. Ajoutez GROQ_API_KEY dans Vercel. 2. REDÉPLOYEZ votre application pour valider.' 
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

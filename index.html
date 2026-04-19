@@ -9,12 +9,27 @@
   <meta property="og:description" content="Quatre agents experts spécialisés en droit fiscal, comptabilité, droit civil et droit des affaires français.">
   <meta property="og:type" content="website">
   <title>Agents Maîtres — Conseil Juridique & Fiscal IA</title>
+  
+  <!-- Cache Buster Commando (v3.1) -->
+  <script>
+    const APP_VERSION = '3.2';
+    if (localStorage.getItem('app_version') !== APP_VERSION) {
+      localStorage.clear();
+      localStorage.setItem('app_version', APP_VERSION);
+      window.location.reload(true);
+    }
+  </script>
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/design-system.css">
-  <link rel="stylesheet" href="css/components.css">
-  <link rel="stylesheet" href="css/layout.css">
-  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="css/design-system.css?v=3.2">
+  <link rel="stylesheet" href="css/components.css?v=3.2">
+  <link rel="stylesheet" href="css/layout.css?v=3.2">
+  <link rel="stylesheet" href="css/responsive.css?v=3.2">
+
+  <!-- External Libraries (v3.0) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://unpkg.com/mammoth@1.6.0/mammoth.browser.min.js"></script>
 
   <!-- Additional inline styles for shake animation and table styling -->
   <style>
@@ -123,7 +138,7 @@
   <section class="view" id="login-view">
     <div class="login-container">
       <div class="login-brand">
-        <div class="login-logo">AGENTS <span>MAÎTRES</span></div>
+        <div class="login-logo">AGENTS <span>MAÎTRES</span> <small style="font-size: 10px; opacity: 0.6; margin-left: 5px; color: var(--accent-gold);">v3.2 [ÉLITE]</small></div>
         <p class="login-subtitle">Conseil juridique & fiscal par agents IA spécialisés</p>
       </div>
 
@@ -193,7 +208,9 @@
   <section class="view" id="dashboard-view">
     <header class="app-header">
       <div class="app-header-left">
-        <div class="app-logo">AGENTS <span>MAÎTRES</span></div>
+        <div class="header-logo">
+      <h1>AGENTS<span>MAÎTRES</span> <small style="font-size: 10px; opacity: 0.5; font-weight: normal; margin-left: 5px;">v3.1</small></h1>
+    </div>
       </div>
       <div class="app-header-right">
         <div class="user-info">
@@ -228,12 +245,10 @@
     <div class="chat-layout">
       <!-- Sidebar -->
       <aside class="chat-sidebar" id="chat-sidebar">
-        <div class="sidebar-header">
-          <button class="btn btn-primary btn-sm" id="new-conversation-btn" style="width: 100%;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Nouvelle conversation
-          </button>
-        </div>
+        <div class="sidebar-actions">
+        <button id="new-chat-btn" class="btn btn-primary btn-full">+ Nouvelle conversation</button>
+        <button id="reset-app-btn" class="btn btn-outline btn-full" style="margin-top: 10px; border-color: rgba(255,255,255,0.1); font-size: 11px;">Réinitialiser (Vider Cache)</button>
+      </div>
 
         <div class="sidebar-search">
           <input type="text" class="input" placeholder="Rechercher..." id="conversation-search">
@@ -262,7 +277,10 @@
             <img class="agent-avatar" id="chat-agent-avatar" src="" alt="Agent">
             <div>
               <div class="agent-name" id="chat-agent-name">Agent</div>
-              <div class="agent-status" id="chat-agent-status">En ligne</div>
+              <div class="agent-status-row" style="display: flex; align-items: center; gap: 8px;">
+                <div class="agent-status" id="chat-agent-status">Vérification...</div>
+                <small style="font-size: 9px; opacity: 0.3;">v3.1</small>
+              </div>
             </div>
           </div>
           <div class="chat-header-right">
@@ -278,8 +296,21 @@
         </div>
 
         <!-- Input Area -->
+        <!-- File Preview Area -->
+        <div class="file-preview-container" id="file-preview-area" style="display: none;">
+          <div class="file-card">
+            <span class="file-icon">📄</span>
+            <span class="file-name" id="preview-file-name">nom-du-fichier.pdf</span>
+            <button class="btn-remove-file" id="remove-file-btn">×</button>
+          </div>
+        </div>
+
         <div class="chat-input-container">
           <div class="chat-input-wrapper">
+            <input type="file" id="file-upload-input" style="display: none;" accept=".pdf,.docx">
+            <button class="chat-tool-btn" id="attach-btn" title="Joindre un document (PDF, DOCX)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.51a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            </button>
             <textarea
               class="chat-input"
               id="chat-input"
@@ -287,6 +318,9 @@
               rows="1"
               aria-label="Message"
             ></textarea>
+            <button class="chat-tool-btn mic-btn" id="voice-btn" title="Dictée vocale">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+            </button>
             <button class="chat-send-btn" id="chat-send-btn" disabled aria-label="Envoyer">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
@@ -337,6 +371,14 @@
   </section>
 
   <!-- Main Application Script -->
-  <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/agents.js?v=3.2"></script>
+  <script type="module" src="js/simulation.js?v=3.2"></script>
+  <script type="module" src="js/history.js?v=3.2"></script>
+  <script type="module" src="js/api.js?v=3.2"></script>
+  <script type="module" src="js/documents.js?v=3.2"></script>
+  <script type="module" src="js/voice.js?v=3.2"></script>
+  <script type="module" src="js/chat.js?v=3.2"></script>
+  <script type="module" src="js/router.js?v=3.2"></script>
+  <script type="module" src="js/app.js?v=3.2"></script>
 </body>
 </html>

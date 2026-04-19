@@ -3,8 +3,8 @@
    SPA Router, initialization, event management
    ============================================================ */
 
-import { getAgentsList, getAgent } from './agents.js';
-import { isAuthenticated, getCurrentUser, login, logout } from './auth.js';
+import { getAgentsList, getAgent } from './agents.js?v=3.2';
+import { isAuthenticated, getCurrentUser, login, logout } from './auth.js?v=3.2';
 import {
   getConversationsByAgent,
   getConversation,
@@ -12,8 +12,8 @@ import {
   deleteConversation,
   transferConversation,
   formatDate
-} from './history.js';
-import { sendMessage, renderMessages } from './chat.js';
+} from './history.js?v=3.2';
+import { sendMessage, renderMessages, initV3Features } from './chat.js?v=3.2';
 
 // ============================================================
 // APPLICATION STATE
@@ -81,6 +81,18 @@ function initLogin() {
 
   // Password visibility toggle
   const toggleBtn = document.getElementById('password-toggle');
+  
+  // Reset App Button
+  const resetAppBtn = document.getElementById('reset-app-btn');
+  if (resetAppBtn) {
+    resetAppBtn.addEventListener('click', () => {
+      if (confirm('Voulez-vous réinitialiser l\'application ? Cela effacera toutes les conversations et videra le cache local.')) {
+        localStorage.clear();
+        window.location.reload(true);
+      }
+    });
+  }
+
   if (toggleBtn) {
     toggleBtn.addEventListener('click', () => {
       const type = passwordInput.type === 'password' ? 'text' : 'password';
@@ -189,7 +201,10 @@ function openAgent(agentId) {
     headerAvatar.style.borderColor = agent.color;
   }
   if (headerName) headerName.textContent = `${agent.name} — ${agent.title}`;
-  if (headerStatus) headerStatus.textContent = 'En ligne';
+  if (headerStatus) {
+    headerStatus.textContent = 'Vérification...';
+    headerStatus.classList.remove('status-live', 'status-simulation');
+  }
 
   // Update info panel
   updateInfoPanel(agent);
@@ -214,6 +229,9 @@ function openAgent(agentId) {
 
   // Setup input
   setupChatInput();
+
+  // Initialize v3.0 features
+  initV3Features();
 }
 
 function updateInfoPanel(agent) {

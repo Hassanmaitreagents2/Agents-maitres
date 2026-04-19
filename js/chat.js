@@ -3,9 +3,14 @@
    Message sending, streaming rendering, markdown parsing
    ============================================================ */
 
-import { getAgent } from './agents.js';
-import { addMessage, getConversation, formatTime } from './history.js';
-import { callAgentAPI, extractSources } from './api.js';
+import { getAgent } from './agents.js?v=3.2';
+import { saveMessage, getMessages } from './history.js?v=3.2';
+import { VoiceSynthesis, VoiceRecognition } from './voice.js?v=3.2';
+import { extractTextFromFile } from './documents.js?v=3.2';
+
+const synth = new VoiceSynthesis();
+let currentFileContext = null;
+import { callAgentAPI, extractSources } from './api.js?v=3.2';
 
 // ============================================================
 // MARKDOWN PARSER — Robust block-level + inline processing
@@ -198,11 +203,38 @@ function createMessageElement(message, agentId) {
       <img class="message-avatar" src="${agent.avatar}" alt="${agent.name}" style="width:32px;height:32px;border-radius:9999px;flex-shrink:0;object-fit:cover;" onerror="this.style.display='none'">
       <div class="message-content">
         <div class="message-bubble">${parseMarkdown(message.content)}</div>
+        
+        <div class="message-actions">
+          <button class="action-btn btn-export-pdf" title="Exporter en PDF">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            PDF
+          </button>
+          <button class="action-btn btn-speak" title="Écouter la réponse">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            Écouter
+          </button>
+        </div>
+
         ${sourcesHtml}
         ${transferHtml}
         <span class="message-time">${formatTime(message.timestamp)}</span>
       </div>
     `;
+  }
+
+  // Add event listeners to action buttons
+  const exportBtn = div.querySelector('.btn-export-pdf');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', () => {
+      exportToPDF(div, getAgent(message.agentId));
+    });
+  }
+
+  const speakBtn = div.querySelector('.btn-speak');
+  if (speakBtn) {
+    speakBtn.addEventListener('click', () => {
+      synth.speak(message.content);
+    });
   }
 
   return div;
@@ -333,6 +365,17 @@ async function sendMessage(conversationId, agentId, content) {
   const messagesContainer = document.getElementById('chat-messages-list');
   if (!messagesContainer) return;
 
+  // Prepare final prompt with document context if available
+  let finalContent = content;
+  if (currentFileContext) {
+    finalContent = `[CONTEXTE DOCUMENTAIRE RÉFÉRENCE: ${currentFileContext.name}]\nContenu du document :\n${currentFileContext.content}\n\n[FIN DU CONTEXTE]\n\nUtilisateur : ${content}`;
+    
+    // Reset file context after sending
+    currentFileContext = null;
+    document.getElementById('file-preview-area').style.display = 'none';
+    document.getElementById('file-upload-input').value = '';
+  }
+
   // Add user message to history
   const userMsg = addMessage(conversationId, {
     role: 'user',
@@ -360,7 +403,7 @@ async function sendMessage(conversationId, agentId, content) {
   const contextMessages = conversation ? conversation.messages.map(m => ({
     role: m.role === 'agent' ? 'assistant' : m.role,
     content: m.content
-  })) : [{ role: 'user', content }];
+  })) : [{ role: 'user', content: finalContent }];
 
   // Streaming content accumulator
   let fullContent = '';
@@ -370,7 +413,9 @@ async function sendMessage(conversationId, agentId, content) {
     agentId,
     contextMessages,
     // onToken
-    (token) => {
+    (token, mode) => {
+      if (mode) updateAgentStatusUI(mode);
+      
       if (firstToken) {
         const bubble = streamingEl.querySelector('.message-bubble');
         if (bubble) bubble.innerHTML = '';
@@ -380,7 +425,7 @@ async function sendMessage(conversationId, agentId, content) {
       updateStreamingMessage(streamingEl, fullContent);
     },
     // onComplete
-    (completedContent) => {
+    (completedContent, mode) => {
       fullContent = completedContent;
       finalizeStreamingMessage(streamingEl, fullContent, conversationId, agentId);
 
@@ -389,6 +434,9 @@ async function sendMessage(conversationId, agentId, content) {
         input.focus();
       }
       if (sendBtn) sendBtn.disabled = false;
+
+      // Update UI status indicator
+      updateAgentStatusUI(mode);
     },
     // onError
     (error) => {
@@ -470,4 +518,159 @@ function escapeAttr(text) {
   return text.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-export { sendMessage, renderMessages, renderWelcome, parseMarkdown };
+// ============================================================
+// STATUS UI UPDATE
+// ============================================================
+function updateAgentStatusUI(mode) {
+  const statusEl = document.getElementById('chat-agent-status');
+  if (!statusEl) return;
+
+  statusEl.classList.remove('status-live', 'status-simulation');
+
+  if (mode === 'groq') {
+    statusEl.textContent = 'En ligne (Groq AI)';
+    statusEl.classList.add('status-live');
+  } else {
+    statusEl.textContent = 'Mode Simulation (Clé manquante)';
+    statusEl.classList.add('status-simulation');
+    
+    // Explicit warning in console
+    console.warn('Utilisation du mode simulation local. Vérifiez vos variables d\'environnement Vercel.');
+  }
+}
+
+// ============================================================
+// PDF EXPORT UTILITY
+// ============================================================
+function exportToPDF(messageElement, agent) {
+  const bubble = messageElement.querySelector('.message-bubble');
+  if (!bubble) return;
+
+  // Create a professional container for the PDF
+  const container = document.createElement('div');
+  container.style.padding = '40px';
+  container.style.color = '#0D0D0D';
+  container.style.backgroundColor = '#FFFFFF';
+  container.style.fontFamily = 'Arial, sans-serif';
+
+  const date = new Date().toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+
+  container.innerHTML = `
+    <div style="border-bottom: 2px solid #C9A84C; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h1 style="margin: 0; font-size: 24px;">AGENTS <span style="color: #C9A84C;">MAÎTRES</span></h1>
+        <p style="margin: 5px 0 0; font-size: 14px; color: #666;">Conseil Juridique & Fiscal IA</p>
+      </div>
+      <div style="text-align: right;">
+        <p style="margin: 0; font-weight: bold;">Le ${date}</p>
+      </div>
+    </div>
+    
+    <div style="margin-bottom: 30px;">
+      <h2 style="margin: 0; font-size: 18px; color: #444;">Avis de ${agent.name}</h2>
+      <p style="margin: 5px 0 0; font-size: 14px; color: #888;">${agent.title}</p>
+    </div>
+
+    <div style="line-height: 1.6; font-size: 14px;">
+      ${bubble.innerHTML}
+    </div>
+
+    <div style="margin-top: 50px; padding-top: 20px; border-top: 1px solid #EEE; font-size: 12px; color: #999; text-align: center;">
+      <p>Agents Maîtres — Expertise sourcée et certifiée. Document généré le ${date}.</p>
+      <p>Note : Ce document est une synthèse indicative générée par IA. Consultez un professionnel pour vos démarches officielles.</p>
+    </div>
+  `;
+
+  // Fix table styling for PDF (html2pdf sometimes struggles with flex/grid)
+  const tables = container.querySelectorAll('table');
+  tables.forEach(t => {
+    t.style.borderCollapse = 'collapse';
+    t.style.width = '100%';
+    t.style.marginBottom = '20px';
+    t.querySelectorAll('th, td').forEach(cell => {
+      cell.style.border = '1px solid #ddd';
+      cell.style.padding = '8px';
+      cell.style.textAlign = 'left';
+    });
+    t.querySelectorAll('th').forEach(th => th.style.backgroundColor = '#f9f9f9');
+  });
+
+  const opt = {
+    margin: 10,
+    filename: `Agents_Maitres_Avis_${agent.id}_${new Date().getTime()}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  html2pdf().set(opt).from(container).save();
+}
+
+/**
+ * Initialize new features (Voice, Documents)
+ */
+function initV3Features() {
+  const voiceBtn = document.getElementById('voice-btn');
+  const attachBtn = document.getElementById('attach-btn');
+  const fileInput = document.getElementById('file-upload-input');
+  const chatInput = document.getElementById('chat-input');
+  const removeFileBtn = document.getElementById('remove-file-btn');
+  const filePreview = document.getElementById('file-preview-area');
+  const fileNameDisplay = document.getElementById('preview-file-name');
+
+  if (!voiceBtn || !attachBtn || !chatInput) {
+    console.warn('V3 indicators not found in DOM yet.');
+    return;
+  }
+
+  // Voice Interaction
+  const recognition = new VoiceRecognition(
+    (transcript) => {
+      chatInput.value += (chatInput.value ? ' ' : '') + transcript;
+      chatInput.dispatchEvent(new Event('input')); // Trigger resize
+    },
+    (isListening) => {
+      voiceBtn.classList.toggle('listening', isListening);
+    }
+  );
+
+  voiceBtn.onclick = () => recognition.toggle();
+
+  // Document Analysis
+  attachBtn.onclick = () => fileInput.click();
+
+  fileInput.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      fileNameDisplay.textContent = `Analyse de ${file.name}...`;
+      filePreview.style.display = 'block';
+      
+      const text = await extractTextFromFile(file);
+      currentFileContext = {
+        name: file.name,
+        content: text
+      };
+
+      fileNameDisplay.textContent = file.name;
+    } catch (err) {
+      alert(err.message);
+      filePreview.style.display = 'none';
+      currentFileContext = null;
+    }
+  };
+
+  removeFileBtn.onclick = () => {
+    currentFileContext = null;
+    filePreview.style.display = 'none';
+    fileInput.value = '';
+  };
+}
+
+export { sendMessage, renderMessages, renderWelcome, parseMarkdown, updateAgentStatusUI, initV3Features };
+
