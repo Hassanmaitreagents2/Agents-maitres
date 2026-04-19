@@ -7,10 +7,10 @@ import { getAgent } from './agents.js';
 import { saveMessage, getMessages } from './history.js';
 import { VoiceSynthesis, VoiceRecognition } from './voice.js';
 import { extractTextFromFile } from './documents.js';
+import { callAgentAPI, extractSources } from './api.js';
 
 const synth = new VoiceSynthesis();
 let currentFileContext = null;
-import { callAgentAPI, extractSources } from './api.js';
 
 // ============================================================
 // MARKDOWN PARSER — Robust block-level + inline processing
