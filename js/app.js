@@ -3,8 +3,8 @@
    SPA Router, initialization, event management
    ============================================================ */
 
-import { getAgentsList, getAgent } from './agents.js?v=3.2';
-import { isAuthenticated, getCurrentUser, login, logout } from './auth.js?v=3.2';
+import { getAgentsList, getAgent } from './agents.js';
+import { isAuthenticated, getCurrentUser, login, logout } from './auth.js';
 import {
   getConversationsByAgent,
   getConversation,
@@ -12,8 +12,8 @@ import {
   deleteConversation,
   transferConversation,
   formatDate
-} from './history.js?v=3.2';
-import { sendMessage, renderMessages, initV3Features } from './chat.js?v=3.2';
+} from './history.js';
+import { sendMessage, renderMessages, initV3Features } from './chat.js';
 
 // ============================================================
 // APPLICATION STATE

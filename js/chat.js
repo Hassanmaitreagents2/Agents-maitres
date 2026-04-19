@@ -3,14 +3,14 @@
    Message sending, streaming rendering, markdown parsing
    ============================================================ */
 
-import { getAgent } from './agents.js?v=3.2';
-import { saveMessage, getMessages } from './history.js?v=3.2';
-import { VoiceSynthesis, VoiceRecognition } from './voice.js?v=3.2';
-import { extractTextFromFile } from './documents.js?v=3.2';
+import { getAgent } from './agents.js';
+import { saveMessage, getMessages } from './history.js';
+import { VoiceSynthesis, VoiceRecognition } from './voice.js';
+import { extractTextFromFile } from './documents.js';
 
 const synth = new VoiceSynthesis();
 let currentFileContext = null;
-import { callAgentAPI, extractSources } from './api.js?v=3.2';
+import { callAgentAPI, extractSources } from './api.js';
 
 // ============================================================
 // MARKDOWN PARSER — Robust block-level + inline processing
